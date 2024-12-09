@@ -8,24 +8,34 @@
 # install.packages("tidyr")
 # install.packages("readr")
 
+#!/usr/bin/env Rscript
+
+# Load required libraries
 library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(readr)
 
-cat("Enter a two-letter state code (e.g. 'NY', 'CA', 'DC', or 'ALL'): ")
-selected_state <- readLines(con="stdin", n=1)
-selected_state <- toupper(selected_state)
+# Get command-line arguments
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) == 0) {
+  stop("No state code provided. Please provide a state code as an argument.")
+}
+state_code <- toupper(args[1])
 
-allsubmissions_path <- paste0("../results/data/", selected_state, "_SubmissionsEnrichedExpanded.csv")
-uniquesubmissions_path <- paste0("../results/data/", selected_state, "_UniqueComplaintsEnrichedExpanded.csv")
+# Define file paths based on the state_code
+allsubmissions_path <- paste0("../results/data/", state_code, "_SubmissionsEnrichedExpanded.csv")
+uniquesubmissions_path <- paste0("../results/data/", state_code, "_UniqueComplaintsEnrichedExpanded.csv")
 
+# Check if the files exist
 if (!file.exists(allsubmissions_path) || !file.exists(uniquesubmissions_path)) {
   stop("Data files not found for the selected state.")
 }
 
+# Load data
 allsubmissions <- read.csv(allsubmissions_path)
 uniquesubmissions <- read.csv(uniquesubmissions_path)
+
 
 # Calculate required metrics once
 unique_submission_count <- nrow(uniquesubmissions %>% distinct(Remedy.Case.Number))
@@ -76,7 +86,7 @@ results <- data.frame(
 
 write.csv(
   results, 
-  paste0("../results/analysis/", selected_state, "_GeneralReport.csv"),
+  paste0("../results/analysis/", state_code, "_GeneralReport.csv"),
   row.names = FALSE,
   quote = TRUE
 )
@@ -145,7 +155,7 @@ analysis <- primaryreasonbreakdown %>%
   arrange(desc(`Unique Complaint Count`)) # Sort by total complaints in descending order
 
 # Save the result to a CSV file
-write.csv(analysis, paste0("../results/analysis/", selected_state, "_PrimarySubjectAnalysis.csv"), row.names = FALSE, quote = TRUE)
+write.csv(analysis, paste0("../results/analysis/", state_code, "_PrimarySubjectAnalysis.csv"), row.names = FALSE, quote = TRUE)
 
 
 
@@ -213,7 +223,7 @@ analysis_secondary <- secondaryreasonbreakdown %>%
   arrange(desc(`Unique Complaint Count`)) # Sort by total complaints in descending order
 
 # Save the result to a CSV file
-write.csv(analysis_secondary, paste0("../results/analysis/", selected_state, "_SecondarySubjectAnalysis.csv"), row.names = FALSE, quote = TRUE)
+write.csv(analysis_secondary, paste0("../results/analysis/", state_code, "_SecondarySubjectAnalysis.csv"), row.names = FALSE, quote = TRUE)
 
 
 
@@ -236,7 +246,7 @@ ggplot(analysis, aes(x = reorder(`Primary.Remedy.Subject`, -`Unique Complaint Co
 
 # Save with wider dimensions
 ggsave(
-  filename = paste0("../results/analysis/", selected_state, "_UniqueComplaintBreakdown1.png"),
+  filename = paste0("../results/analysis/", state_code, "_UniqueComplaintBreakdown1.png"),
   width = 16, 
   height = 6,
   units = "in"
@@ -271,7 +281,7 @@ complaint_plot <- ggplot(analysis_long, aes(x = reorder(`Primary.Remedy.Subject`
 
 # Save with wider dimensions
 ggsave(
-  filename = paste0("../results/analysis/", selected_state, "_UniqueComplaintBreakdown2.png"),
+  filename = paste0("../results/analysis/", state_code, "_UniqueComplaintBreakdown2.png"),
   width = 16, 
   height = 6,
   units = "in"

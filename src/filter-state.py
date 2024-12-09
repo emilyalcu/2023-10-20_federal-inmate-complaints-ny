@@ -252,6 +252,22 @@ enriched_data = enrich_submissions(filtered_data, output_path, state_code)
 expanded_data = expand_submissions(enriched_data, output_path, state_code, code_files)
 unique_data = create_unique_submissions(enriched_data, output_path, state_code)
 expand_unique_submissions(unique_data, output_path, state_code, code_files)
+# %%
+import subprocess
+
+# Define the path to your R script
+r_script_path = "analysis.R"
+
+# Run the R script and pass the state_code as an argument
+try:
+    subprocess.run(
+        ["Rscript", r_script_path, state_code],
+        check=True  # Raises an error if the R script fails
+    )
+    print(f"R script executed successfully for state: {state_code}")
+except subprocess.CalledProcessError as e:
+    print(f"Error occurred while running the R script: {e}")
+
 
 
 
