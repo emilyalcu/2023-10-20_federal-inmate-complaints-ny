@@ -1,28 +1,36 @@
+import pandas as pd
+import os
+import sys
+
 # %%
 # STEP 1: Create [STATE] subset of data from the data provided by BOP
     # Find all [STATE] Facilities in the CDFC_FacilityCodes.csv and save as a set
     # Use the set to filter ComplaintFilings.csv so that we are left with only complaints made at [STATE] facilities 
     # Save results to [STATE]_Submissions.csv
 
-import pandas as pd
-import os
 
 def filter_submissions(state_code, input_facilities_path, input_submissions_path, output_path):
-    # Ensure output directory exists
-    os.makedirs(output_path, exist_ok=True)
 
-    # Load facilities data, filter for [STATE] facility codes, and save as a variable
+    # Load facilities key
     all_facilities = pd.read_csv(input_facilities_path)
-    state_facility_codes = set(all_facilities.loc[all_facilities['State'] == state_code, 'Facility_Code'])
 
-    # Load BOP submissions data and filter where CDFCLEVN value (Facility of Occurrence) is in variable
+    # Load all submissions
     all_submissions = pd.read_csv(input_submissions_path)
-    state_submissions = all_submissions[all_submissions['CDFCLEVN'].isin(state_facility_codes)]
+
+    if state_code == "ALL":
+        # If user chooses ALL, do not filter by State
+        state_submissions = all_submissions
+        filtered_output_file = f"{output_path}/ALL_Submissions.csv"
+    else:
+        # Filter facilities for the state_code given by user
+        state_facility_codes = set(all_facilities.loc[all_facilities['State'] == state_code, 'Facility_Code'])
+        # Filter submissions to only those facilities
+        state_submissions = all_submissions[all_submissions['CDFCLEVN'].isin(state_facility_codes)]
+        filtered_output_file = f"{output_path}/{state_code}_Submissions.csv"
 
     # Save filtered dataset to a csv file
-    filtered_output_file = f"{output_path}/{state_code}_Submissions.csv"
     state_submissions.to_csv(filtered_output_file, index=False)
-    print(f"Filtered submissions for state '{state_code}' saved to {filtered_output_file}.")
+    print(f"{state_code} filtered submissions saved to {filtered_output_file}.")
     return state_submissions
 
 # %%
@@ -78,7 +86,7 @@ def enrich_submissions(state_submissions, output_path, state_code):
     # save the updated dataset as [STATE]_SubmissionsEnriched.csv
     enriched_output_file = f"{output_path}/{state_code}_SubmissionsEnriched.csv"
     enriched_submissions.to_csv(enriched_output_file, index=False)
-    print(f"Enriched submissions for state '{state_code}' saved to {enriched_output_file}.")
+    print(f"{state_code} enriched submissions saved to {enriched_output_file}.")
     return enriched_submissions
 
 
@@ -86,7 +94,6 @@ def enrich_submissions(state_submissions, output_path, state_code):
 # STEP 3: Create expanded dataset with tranlations of the codes for easier use
 
 def expand_submissions(enriched_submissions, output_path, state_code, code_files):
-
     # Import code translation CSVs
     complaintcodes = pd.read_csv(code_files['complaintcodes'])
     facilitycodes = pd.read_csv(code_files['facilitycodes'])
@@ -99,26 +106,33 @@ def expand_submissions(enriched_submissions, output_path, state_code, code_files
     # Duplicate dataset to avoid modifying the original
     expanded_submissions = enriched_submissions.copy()
 
-    # Duplicate 'cdsub1cb' column for translation
-    expanded_submissions['cdsub1cbTEXT'] = expanded_submissions['cdsub1cb']
+    # Replace codes with translations using .where()
+    expanded_submissions['cdsub1cbTEXT'] = expanded_submissions['cdsub1cb'].map(complaintcodes.set_index('Code')['Text'])
+    expanded_submissions['cdsub1cbTEXT'] = expanded_submissions['cdsub1cbTEXT'].where(expanded_submissions['cdsub1cbTEXT'].notna(), expanded_submissions['cdsub1cb'])
 
-    # Replace codes with translations from code files
-    expanded_submissions['cdsub1cbTEXT'] = expanded_submissions['cdsub1cbTEXT'].map(complaintcodes.set_index('Code')['Text']).fillna(expanded_submissions['cdsub1cbTEXT'])
-    expanded_submissions['CDFCLEVN'] = expanded_submissions['CDFCLEVN'].map(facilitycodes.set_index('Facility_Code')['Facility_Name']).fillna(expanded_submissions['CDFCLEVN'])
-    expanded_submissions['CDFCLRCV'] = expanded_submissions['CDFCLRCV'].map(facilitycodes.set_index('Facility_Code')['Facility_Name']).fillna(expanded_submissions['CDFCLRCV'])
-    expanded_submissions['CDOFCRCV'] = expanded_submissions['CDOFCRCV'].map(facilitycodes.set_index('Facility_Code')['Facility_Name']).fillna(expanded_submissions['CDOFCRCV'])
-    expanded_submissions['ITERLVL'] = expanded_submissions['ITERLVL'].map(orglevelcodes.set_index('Code')['Text']).fillna(expanded_submissions['ITERLVL'])
-    expanded_submissions['CDSTATUS'] = expanded_submissions['CDSTATUS'].map(statuscodes.set_index('Code')['Text']).fillna(expanded_submissions['CDSTATUS'])
+    expanded_submissions['CDFCLEVN'] = expanded_submissions['CDFCLEVN'].map(facilitycodes.set_index('Facility_Code')['Facility_Name'])
+    expanded_submissions['CDFCLEVN'] = expanded_submissions['CDFCLEVN'].where(expanded_submissions['CDFCLEVN'].notna(), expanded_submissions['CDFCLEVN'])
 
-    # Replace status reason codes
+    expanded_submissions['CDFCLRCV'] = expanded_submissions['CDFCLRCV'].map(facilitycodes.set_index('Facility_Code')['Facility_Name'])
+    expanded_submissions['CDFCLRCV'] = expanded_submissions['CDFCLRCV'].where(expanded_submissions['CDFCLRCV'].notna(), expanded_submissions['CDFCLRCV'])
+
+    expanded_submissions['CDOFCRCV'] = expanded_submissions['CDOFCRCV'].map(facilitycodes.set_index('Facility_Code')['Facility_Name'])
+    expanded_submissions['CDOFCRCV'] = expanded_submissions['CDOFCRCV'].where(expanded_submissions['CDOFCRCV'].notna(), expanded_submissions['CDOFCRCV'])
+
+    expanded_submissions['ITERLVL'] = expanded_submissions['ITERLVL'].map(orglevelcodes.set_index('Code')['Text'])
+    expanded_submissions['ITERLVL'] = expanded_submissions['ITERLVL'].where(expanded_submissions['ITERLVL'].notna(), expanded_submissions['ITERLVL'])
+
+    expanded_submissions['CDSTATUS'] = expanded_submissions['CDSTATUS'].map(statuscodes.set_index('Code')['Text'])
+    expanded_submissions['CDSTATUS'] = expanded_submissions['CDSTATUS'].where(expanded_submissions['CDSTATUS'].notna(), expanded_submissions['CDSTATUS'])
+
+    # Replace codes with translations for all 5 Status Reason columns
     for col in ['STATRSN1', 'STATRSN2', 'STATRSN3', 'STATRSN4', 'STATRSN5']:
-        expanded_submissions[col] = expanded_submissions[col].map(statusreasoncodes.set_index('Reason Code')['Text']).fillna(expanded_submissions[col])
+        mapped_values = expanded_submissions[col].map(statusreasoncodes.set_index('Reason Code')['Text'])
+        expanded_submissions[col] = mapped_values.where(mapped_values.notna(), expanded_submissions[col])
 
     # Translate primary subject codes
-    expanded_submissions['CDSUB1PR'] = expanded_submissions['CDSUB1PR'].map(primarysubjectcodes.set_index('Primary Subject Code')['Primary Subject Code Translation']).fillna(expanded_submissions['CDSUB1PR'])
-
-    # Replace null values in 'sdtdue' for rejected statuses
-    expanded_submissions['sdtdue'] = expanded_submissions['sdtdue'].fillna('rejected')
+    expanded_submissions['CDSUB1PR'] = expanded_submissions['CDSUB1PR'].map(primarysubjectcodes.set_index('Primary Subject Code')['Primary Subject Code Translation'])
+    expanded_submissions['CDSUB1PR'] = expanded_submissions['CDSUB1PR'].where(expanded_submissions['CDSUB1PR'].notna(), expanded_submissions['CDSUB1PR'])
 
     # Replace binary values with 'yes' and 'no' for clarity
     binary_columns = [
@@ -129,14 +143,14 @@ def expand_submissions(enriched_submissions, output_path, state_code, code_files
     for col in binary_columns:
         expanded_submissions[col] = expanded_submissions[col].replace({0: 'no', 1: 'yes'})
 
-    # Load column code CSV as a dictionary and rename columns
+    # Rename columns using column code CSV
     columncodes_dict = dict(zip(columncodes['Code'], columncodes['Text']))
     expanded_submissions.rename(columns=columncodes_dict, inplace=True)
 
     # Save expanded dataset to a CSV file
     expanded_output_file = f"{output_path}/{state_code}_SubmissionsEnrichedExpanded.csv"
     expanded_submissions.to_csv(expanded_output_file, index=False)
-    print(f"Expanded submissions for state '{state_code}' saved to {expanded_output_file}.")
+    print(f"{state_code} expanded submissions saved to {expanded_output_file}.")
 
     return expanded_submissions
 
@@ -155,7 +169,7 @@ def create_unique_submissions(enriched_submissions, output_path, state_code):
     # Save Unique NY Submissions to a CSV
     unique_output_file = f"{output_path}/{state_code}_UniqueComplaintsEnriched.csv"
     unique_submissions.to_csv(unique_output_file, index=False)
-    print(f"Unique submissions for state '{state_code}' saved to {unique_output_file}.")
+    print(f"{state_code} unique complaints saved to {unique_output_file}.")
     return unique_submissions
 
 
@@ -163,18 +177,6 @@ def create_unique_submissions(enriched_submissions, output_path, state_code):
 # STEP 5: Create expanded dataset of NYSubmissionsEnriched.csv with codes translated for easier use 
 
 def expand_unique_submissions(unique_submissions, output_path, state_code, code_files):
-    """
-    Expands the unique submissions dataset by translating codes into human-readable formats.
-
-    Parameters:
-        unique_submissions (pd.DataFrame): The unique submissions dataset.
-        output_path (str): Path to save the expanded dataset.
-        state_code (str): The state code (e.g., 'NY').
-        code_files (dict): Dictionary containing paths to code translation CSV files.
-
-    Returns:
-        pd.DataFrame: The expanded unique dataset.
-    """
     # Import code translation CSVs
     complaintcodes = pd.read_csv(code_files['complaintcodes'])
     facilitycodes = pd.read_csv(code_files['facilitycodes'])
@@ -187,24 +189,33 @@ def expand_unique_submissions(unique_submissions, output_path, state_code, code_
     # Duplicate dataset to avoid modifying the original
     unique_expanded_submissions = unique_submissions.copy()
 
-    # Duplicate 'cdsub1cb' column for translation
-    unique_expanded_submissions['cdsub1cbTEXT'] = unique_expanded_submissions['cdsub1cb']
+    # Replace codes with translations 
+    unique_expanded_submissions['cdsub1cbTEXT'] = unique_expanded_submissions['cdsub1cb'].map(complaintcodes.set_index('Code')['Text'])
+    unique_expanded_submissions['cdsub1cbTEXT'] = unique_expanded_submissions['cdsub1cbTEXT'].where(unique_expanded_submissions['cdsub1cbTEXT'].notna(), unique_expanded_submissions['cdsub1cb'])
 
-    # Replace codes with translations from code files
-    unique_expanded_submissions['cdsub1cbTEXT'] = unique_expanded_submissions['cdsub1cbTEXT'].map(complaintcodes.set_index('Code')['Text']).fillna(unique_expanded_submissions['cdsub1cb'])
-    unique_expanded_submissions['CDFCLEVN'] = unique_expanded_submissions['CDFCLEVN'].map(facilitycodes.set_index('Facility_Code')['Facility_Name']).fillna(unique_expanded_submissions['CDFCLEVN'])
-    unique_expanded_submissions['CDFCLRCV'] = unique_expanded_submissions['CDFCLRCV'].map(facilitycodes.set_index('Facility_Code')['Facility_Name']).fillna(unique_expanded_submissions['CDFCLRCV'])
-    unique_expanded_submissions['CDOFCRCV'] = unique_expanded_submissions['CDOFCRCV'].map(facilitycodes.set_index('Facility_Code')['Facility_Name']).fillna(unique_expanded_submissions['CDOFCRCV'])
-    unique_expanded_submissions['ITERLVL'] = unique_expanded_submissions['ITERLVL'].map(orglevelcodes.set_index('Code')['Text']).fillna(unique_expanded_submissions['ITERLVL'])
-    unique_expanded_submissions['CDSTATUS'] = unique_expanded_submissions['CDSTATUS'].map(statuscodes.set_index('Code')['Text']).fillna(unique_expanded_submissions['CDSTATUS'])
+    unique_expanded_submissions['CDFCLEVN'] = unique_expanded_submissions['CDFCLEVN'].map(facilitycodes.set_index('Facility_Code')['Facility_Name'])
+    unique_expanded_submissions['CDFCLEVN'] = unique_expanded_submissions['CDFCLEVN'].where(unique_expanded_submissions['CDFCLEVN'].notna(), unique_expanded_submissions['CDFCLEVN'])
 
-    # Replace status reason codes
+    unique_expanded_submissions['CDFCLRCV'] = unique_expanded_submissions['CDFCLRCV'].map(facilitycodes.set_index('Facility_Code')['Facility_Name'])
+    unique_expanded_submissions['CDFCLRCV'] = unique_expanded_submissions['CDFCLRCV'].where(unique_expanded_submissions['CDFCLRCV'].notna(), unique_expanded_submissions['CDFCLRCV'])
+
+    unique_expanded_submissions['CDOFCRCV'] = unique_expanded_submissions['CDOFCRCV'].map(facilitycodes.set_index('Facility_Code')['Facility_Name'])
+    unique_expanded_submissions['CDOFCRCV'] = unique_expanded_submissions['CDOFCRCV'].where(unique_expanded_submissions['CDOFCRCV'].notna(), unique_expanded_submissions['CDOFCRCV'])
+
+    unique_expanded_submissions['ITERLVL'] = unique_expanded_submissions['ITERLVL'].map(orglevelcodes.set_index('Code')['Text'])
+    unique_expanded_submissions['ITERLVL'] = unique_expanded_submissions['ITERLVL'].where(unique_expanded_submissions['ITERLVL'].notna(), unique_expanded_submissions['ITERLVL'])
+
+    unique_expanded_submissions['CDSTATUS'] = unique_expanded_submissions['CDSTATUS'].map(statuscodes.set_index('Code')['Text'])
+    unique_expanded_submissions['CDSTATUS'] = unique_expanded_submissions['CDSTATUS'].where(unique_expanded_submissions['CDSTATUS'].notna(), unique_expanded_submissions['CDSTATUS'])
+
+    # Replace codes with translations for all 5 Status Reason columns
     for col in ['STATRSN1', 'STATRSN2', 'STATRSN3', 'STATRSN4', 'STATRSN5']:
-        unique_expanded_submissions[col] = unique_expanded_submissions[col].map(
-            statusreasoncodes.set_index('Reason Code')['Text']).fillna(unique_expanded_submissions[col])
+        mapped_values = unique_expanded_submissions[col].map(statusreasoncodes.set_index('Reason Code')['Text'])
+        unique_expanded_submissions[col] = mapped_values.where(mapped_values.notna(), unique_expanded_submissions[col])
 
     # Translate primary subject codes
-    unique_expanded_submissions['CDSUB1PR'] = unique_expanded_submissions['CDSUB1PR'].map(primarysubjectcodes.set_index('Primary Subject Code')['Primary Subject Code Translation']).fillna(unique_expanded_submissions['CDSUB1PR'])
+    unique_expanded_submissions['CDSUB1PR'] = unique_expanded_submissions['CDSUB1PR'].map(primarysubjectcodes.set_index('Primary Subject Code')['Primary Subject Code Translation'])
+    unique_expanded_submissions['CDSUB1PR'] = unique_expanded_submissions['CDSUB1PR'].where(unique_expanded_submissions['CDSUB1PR'].notna(), unique_expanded_submissions['CDSUB1PR'])
 
     # Replace null values in 'sdtdue' for rejected statuses
     unique_expanded_submissions['sdtdue'] = unique_expanded_submissions['sdtdue'].fillna('rejected')
@@ -225,50 +236,61 @@ def expand_unique_submissions(unique_submissions, output_path, state_code, code_
     # Save expanded unique dataset to a CSV file
     unique_expanded_output_file = f"{output_path}/{state_code}_UniqueComplaintsEnrichedExpanded.csv"
     unique_expanded_submissions.to_csv(unique_expanded_output_file, index=False)
-    print(f"Unique expanded submissions for state '{state_code}' saved to {unique_expanded_output_file}.")
+    print(f"{state_code} unique expanded complaints saved to {unique_expanded_output_file}.")
 
     return unique_expanded_submissions
 
 
 # %%
-# Define paths
-state_code = input("Enter the state code (e.g., 'NY', 'CA'): ").strip().upper()
-input_facilities_path = '../data/CDFC_FacilityCodes.csv'
-input_submissions_path = '../data/ComplaintFilings.csv'
-output_path = '../results/data'
-code_files = {
-    'complaintcodes': '../data/cdsub1cb_ConcatSubjectCodes.csv',
-    'facilitycodes': '../data/CDFC_FacilityCodes.csv',
-    'statuscodes': '../data/CDSTATUS_CaseStatusCodes.csv',
-    'orglevelcodes': '../data/ITERLVL_OrgLevelCodes.csv',
-    'statusreasoncodes': '../data/STATRSN_StatusReasonCodes.csv',
-    'columncodes': '../data/ColumnCodes.csv',
-    'primarysubjectcodes': '../data/CDSUB1PR _PrimarySubjectCodes.csv'
-}
 
-# Execute steps
-filtered_data = filter_submissions(state_code, input_facilities_path, input_submissions_path, output_path)
-enriched_data = enrich_submissions(filtered_data, output_path, state_code)
-expanded_data = expand_submissions(enriched_data, output_path, state_code, code_files)
-unique_data = create_unique_submissions(enriched_data, output_path, state_code)
-expand_unique_submissions(unique_data, output_path, state_code, code_files)
-# %%
-import subprocess
+if __name__ == "__main__":
+    # # Check if the state_code argument is provided
+    # if len(sys.argv) < 2:
+    #     print("Error: State code is required as a command-line argument.")
+    #     sys.exit(1)
 
-# Define the path to your R script
-r_script_path = "analysis.R"
+    # Get the state code from command-line arguments
+    state_code = sys.argv[1].strip().upper()
 
-# Run the R script and pass the state_code as an argument
-try:
-    subprocess.run(
-        ["Rscript", r_script_path, state_code],
-        check=True  # Raises an error if the R script fails
-    )
-    print(f"R script executed successfully for state: {state_code}")
-except subprocess.CalledProcessError as e:
-    print(f"Error occurred while running the R script: {e}")
+    # Define paths
+    input_facilities_path = '../data/CDFC_FacilityCodes.csv'
+    input_submissions_path = '../data/ComplaintFilings.csv'
+    output_path = '../results/data'
+    code_files = {
+        'complaintcodes': '../data/cdsub1cb_ConcatSubjectCodes.csv',
+        'facilitycodes': '../data/CDFC_FacilityCodes.csv',
+        'statuscodes': '../data/CDSTATUS_CaseStatusCodes.csv',
+        'orglevelcodes': '../data/ITERLVL_OrgLevelCodes.csv',
+        'statusreasoncodes': '../data/STATRSN_StatusReasonCodes.csv',
+        'columncodes': '../data/ColumnCodes.csv',
+        'primarysubjectcodes': '../data/CDSUB1PR _PrimarySubjectCodes.csv'
+    }
 
+    # Execute steps
+    filtered_data = filter_submissions(state_code, input_facilities_path, input_submissions_path, output_path)
+    enriched_data = enrich_submissions(filtered_data, output_path, state_code)
+    expanded_data = expand_submissions(enriched_data, output_path, state_code, code_files)
+    unique_data = create_unique_submissions(enriched_data, output_path, state_code)
+    expand_unique_submissions(unique_data, output_path, state_code, code_files)
 
+# # Define paths
+# state_code = input("Enter the state code (e.g., 'NY', 'CA', or 'ALL' for all states): ").strip().upper()
+# input_facilities_path = '../data/CDFC_FacilityCodes.csv'
+# input_submissions_path = '../data/ComplaintFilings.csv'
+# output_path = '../results/data'
+# code_files = {
+#     'complaintcodes': '../data/cdsub1cb_ConcatSubjectCodes.csv',
+#     'facilitycodes': '../data/CDFC_FacilityCodes.csv',
+#     'statuscodes': '../data/CDSTATUS_CaseStatusCodes.csv',
+#     'orglevelcodes': '../data/ITERLVL_OrgLevelCodes.csv',
+#     'statusreasoncodes': '../data/STATRSN_StatusReasonCodes.csv',
+#     'columncodes': '../data/ColumnCodes.csv',
+#     'primarysubjectcodes': '../data/CDSUB1PR _PrimarySubjectCodes.csv'
+# }
 
-
-
+# # Execute steps
+# filtered_data = filter_submissions(state_code, input_facilities_path, input_submissions_path, output_path)
+# enriched_data = enrich_submissions(filtered_data, output_path, state_code)
+# expanded_data = expand_submissions(enriched_data, output_path, state_code, code_files)
+# unique_data = create_unique_submissions(enriched_data, output_path, state_code)
+# expand_unique_submissions(unique_data, output_path, state_code, code_files)
