@@ -1,5 +1,5 @@
 library(ggplot2)
-library(dplyr)
+suppressPackageStartupMessages(library(dplyr))
 
 
 # %%
@@ -124,3 +124,6 @@ ggsave(
 
 # Print the plot
 print(top_complaints_plot)
+
+# %%
+print("R script for national visualizations executed successfully")
