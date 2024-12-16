@@ -320,7 +320,7 @@ complaint_plot <- ggplot(analysis_long, aes(x = reorder(`Primary.Remedy.Subject`
 
 # Save the plot to a PNG file 
 ggsave(
-  filename = paste0("../results/analysis/", state_code, "_PrimarySubjectByStatus.png"),
+  filename = paste0("../results/analysis/", state_code, "_PrimarySubjectByStatus.pdf"),
   width = 16, 
   height = 6,
   units = "in"
@@ -371,7 +371,7 @@ complaint_secondary_plot <- ggplot(analysis_secondary_long, aes(x = reorder(`Rem
 
 # Save the plot to a PNG file
 ggsave(
-  filename = paste0("../results/analysis/", state_code, "_SecondarySubjectByStatus.png"), 
+  filename = paste0("../results/analysis/", state_code, "_SecondarySubjectByStatus.pdf"), 
   width = 16,  # Width of the image
   height = 6,  # Height of the image
   units = "in"  # Dimensions in inches
@@ -431,7 +431,7 @@ top_primary_complaints_plot <- ggplot(primary_complaints_by_year, aes(x = Year, 
 
 # Save the plot
 ggsave(
-  filename = paste0("../results/analysis/", state_code, "_PrimarySubjectsYearlyBreakdown.png"),
+  filename = paste0("../results/analysis/", state_code, "_PrimarySubjectsYearlyBreakdown.pdf"),
   plot = top_primary_complaints_plot,
   width = 14,
   height = 8,
@@ -491,7 +491,7 @@ top_secondary_complaints_plot <- ggplot(secondary_complaints_by_year, aes(x = Ye
 
 # Save the plot
 ggsave(
-  filename = paste0("../results/analysis/", state_code, "_SecondarySubjectsYearlyBreakdown.png"),
+  filename = paste0("../results/analysis/", state_code, "_SecondarySubjectsYearlyBreakdown.pdf"),
   plot = top_secondary_complaints_plot,
   width = 14,
   height = 8,

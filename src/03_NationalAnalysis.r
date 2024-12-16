@@ -52,7 +52,7 @@ ggplot(submissions_vs_population, aes(x = Year, y = Submissions_per_10k)) +
 
 # Save the plot
 ggsave(
-  filename = "../results/analysis/ALL_UniqueComplaintsPer10kInmates.png",
+  filename = "../results/analysis/ALL_UniqueComplaintsPer10kInmates.pdf",
   width = 14,
   height = 8,
   units = "in"
@@ -115,7 +115,7 @@ top_complaints_plot <- ggplot(complaints_by_year, aes(x = Year, y = Complaints_p
 
 # Save the plot
 ggsave(
-  filename = "../results/analysis/ALL_PrimarySubjectsYearlyBreakdownPer10kInmates.png",
+  filename = "../results/analysis/ALL_PrimarySubjectsYearlyBreakdownPer10kInmates.pdf",
   plot = top_complaints_plot,
   width = 14,
   height = 8,
