@@ -1,4 +1,6 @@
-# Instrcutions for Getting Started
+# Instructions for Getting Started
+
+Be sure to read the wiki page to learn more about the project and the expected outputs. https://github.com/emilyalcu/BOP-inmate-complaints/wiki
 
 ## Step 1: Download this repository 
 - Click the green "Code" button on the github repo page
@@ -61,4 +63,3 @@
 - Change directories to the src subfolder if not done already 
 - Run "Rscript 02_NationalAnalysis.r"
 - The visualization outputs from this step will be found in results>analysis
-
