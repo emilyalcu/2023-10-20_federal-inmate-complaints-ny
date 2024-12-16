@@ -9,7 +9,9 @@ Read more about this project!
 3. Install Homebrew in terminal https://brew.sh/
 - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 4. Install git in terminal
-- brew install git 
+- brew install git
+5. Install Python in terminal
+- brew install python
 4. Install git-lfs using Homebrew in terminal
 - brew install git-lfs
 - git lfs install
