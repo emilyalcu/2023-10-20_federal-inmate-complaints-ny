@@ -5,7 +5,7 @@ import sys
 # %%
 # STEP 1: Create [STATE] subset of data from the data provided by BOP
     # Find all [STATE] Facilities in the CDFC_FacilityCodes.csv and save as a set
-    # Use the set to filter ComplaintFilings.csv so that we are left with only complaints made at [STATE] facilities 
+    # Use the set to filter complaint-filings.csv so that we are left with only complaints made at [STATE] facilities 
     # Save results to [STATE]_Submissions.csv
 
 
@@ -254,7 +254,7 @@ if __name__ == "__main__":
 
     # Define paths
     input_facilities_path = '../data/CDFC_FacilityCodes.csv'
-    input_submissions_path = '../data/ComplaintFilings.csv'
+    input_submissions_path = '../data/complaint-filings.csv'
     output_path = '../results/data'
     code_files = {
         'complaintcodes': '../data/cdsub1cb_ConcatSubjectCodes.csv',
@@ -272,25 +272,3 @@ if __name__ == "__main__":
     expanded_data = expand_submissions(enriched_data, output_path, state_code, code_files)
     unique_data = create_unique_submissions(enriched_data, output_path, state_code)
     expand_unique_submissions(unique_data, output_path, state_code, code_files)
-
-# # Define paths
-# state_code = input("Enter the state code (e.g., 'NY', 'CA', or 'ALL' for all states): ").strip().upper()
-# input_facilities_path = '../data/CDFC_FacilityCodes.csv'
-# input_submissions_path = '../data/ComplaintFilings.csv'
-# output_path = '../results/data'
-# code_files = {
-#     'complaintcodes': '../data/cdsub1cb_ConcatSubjectCodes.csv',
-#     'facilitycodes': '../data/CDFC_FacilityCodes.csv',
-#     'statuscodes': '../data/CDSTATUS_CaseStatusCodes.csv',
-#     'orglevelcodes': '../data/ITERLVL_OrgLevelCodes.csv',
-#     'statusreasoncodes': '../data/STATRSN_StatusReasonCodes.csv',
-#     'columncodes': '../data/ColumnCodes.csv',
-#     'primarysubjectcodes': '../data/CDSUB1PR _PrimarySubjectCodes.csv'
-# }
-
-# # Execute steps
-# filtered_data = filter_submissions(state_code, input_facilities_path, input_submissions_path, output_path)
-# enriched_data = enrich_submissions(filtered_data, output_path, state_code)
-# expanded_data = expand_submissions(enriched_data, output_path, state_code, code_files)
-# unique_data = create_unique_submissions(enriched_data, output_path, state_code)
-# expand_unique_submissions(unique_data, output_path, state_code, code_files)

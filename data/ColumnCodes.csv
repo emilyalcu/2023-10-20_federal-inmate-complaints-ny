@@ -1,3 +1,46 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e49e7cbd2ee4a094dafb1baffb6a08fccb675eeec52415925161411d7940cc11
-size 3741
+Code,Text,
+CASENBR,Remedy Case Number,
+ITERLVL,Organizational level of submission,"F=Facility (BP9), R=Region (BP10), A=Agency (BP11)"
+CDFCLEVN,Facility of Occurrence,
+CDFCLRCV,Facility Received,"The facility assignment of the inmate on the ""date rcv"" for this particular ""submission"". Unlike FACL ORG, the entry in FACL RCV could change with each submission or appeal if the inmate has been transferred."
+CDOFCRCV,Receiving Office,
+CDSTATUS,Case Status,
+STATRSN1,Status Reason 1,Status reasons codes (up to 5) are used only for closed or rejected cases.
+STATRSN2,Status Reason 2,Status reasons codes (up to 5) are used only for closed or rejected cases.
+STATRSN3,Status Reason 3,Status reasons codes (up to 5) are used only for closed or rejected cases.
+STATRSN4,Status Reason 4,Status reasons codes (up to 5) are used only for closed or rejected cases.
+STATRSN5,Status Reason 5,Status reasons codes (up to 5) are used only for closed or rejected cases.
+CDSUB1PR,Primary Remedy Subject,
+CDSUB1SC,Secondary Remedy Subject,
+sdtdue,Remedy Case Submission due date,dtrspdue in RMDY_RMIT
+sdtstat,Date latest status assigned,dtstatus  in RMDY_RMIT
+sitdtrcv,Remedy Case Submission date received,itdtrcv  in RMDY_RMIT
+accept,Remedy Case Accepted,
+reject,Remedy Case Submission Rejected,
+deny,Remedy Case Denied,
+grant,Remedy Case Submission Granted,
+other,Remedy Case Submission Closed - Other,
+submit,Remedy Case Submitted by Inmate,
+filed,Remedy Case Submission Filed,"A submission is considered filed once it is accepted by the Administrative Remedy Clerk. Thus, the term filed includes all submissions with the status codes of ACC, CLD, CLG, or CLO; i.e., all accepted or closed submissions. Rejected or voided submissions are not considered ""filed""."
+diffreg_filed,Remedy Case answered by a different region answered,(1=Yes)
+diffinst,Remedy Case initiated at a different institution,(1=Yes)
+closed,Remedy Case Closed,"Remedy submissions that have been answered (status codes of CLD, CLG, or CLO)."
+comptime,Average time for response, (days)
+timely,Remedy Case Response was timely,
+diffreg_answer,Remedy Case filed by a different region answered,(1=Yes)
+overdue,Remedy Case Response to inmate Overdue,Past the date (sdtdue) by which a response must be signed by an official with signatory authority to be considered timely.
+untimely,Remedy Case Submission Rejected - Untimely,The inmate's request or appeal submission was untimely.
+resubmit,Remedy Case Submission Rejected - Resubmit,The inmate may resubmit the request or appeal.
+noinfres,Remedy Case Submission Rejected - No Informal Resolution,Inmate did not attempt Informal Resolution prior to submission of Remedy or inmate did not provide the necessary evidence of their attempt at an Informal Resolution.
+attachmt,Rejected due to inmate not providing an attachment with the submission,
+wronglvl,Remedy Case Submission Rejected - Wrong Level,The inmate submitted their case to the wrong level or office.
+otherrej,Remedy Case Submission Rejected - Other Reasons,
+cdsub1cb,Primary and Secondary Remedy Subject Codes concatenated,
+subcount,Total number of submissions associated with this CASENBR,
+rejcount,Total number of rejections associated with this CASENBR,
+cldclocount,Total number of Closed Denied or Closed Other status updates associated with this CASENBR,
+clgacccount,Total number of Closed Granted or Closed Accepted status updates associated with this CASENBR,
+cdsub1cbTEXT,Remedy Subject Code Translation,
+earliest_sitdtrcv,Date of initial complaint for this CASENBR,
+latest_sdtstat,Date of lastest status assignment for this CASENBR,
+days_between,Days between initial complaint and latest status assignment for this CASENBR,
