@@ -43,7 +43,7 @@ submissions_vs_population <- submissions_vs_population %>%
 ggplot(submissions_vs_population, aes(x = Year, y = Submissions_per_10k)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(
-    title = "National Annual Unique Complaints per 10,000 Inmates (2000–2023)",
+    title = "National Annual Unique Complaints per 10,000 Inmates (2000 to 2023)",
     x = "Year",
     y = "Submissions per 10,000 Inmates"
   ) +
@@ -100,7 +100,7 @@ complaints_by_year <- complaints_by_year %>%
 top_complaints_plot <- ggplot(complaints_by_year, aes(x = Year, y = Complaints_per_10k, color = `Primary.Remedy.Subject`, group = `Primary.Remedy.Subject`)) +
   geom_line(linewidth = 1) +
   labs(
-    title = "Top 10 Primary Subjects per 10,000 Inmates: Yearly Breakdown (2000-2023)",
+    title = "Top 10 Primary Subjects per 10,000 Inmates: Yearly Breakdown (2000 to 2023)",
     x = "Year",
     y = "Complaints per 10,000 Inmates",
     color = "Primary Remedy Subject"
