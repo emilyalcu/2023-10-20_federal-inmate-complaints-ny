@@ -4,9 +4,9 @@ Read more about this project!
 
 1. Download VSC https://code.visualstudio.com/ 
 2. Install Python extension for VSC
-- In VSC go to extensions and download python 
-- In VSC go to extensions and download Jupyter 
-3. Intall Homebrew in terminal https://brew.sh/
+- In VSC go to extensions and download python https://marketplace.visualstudio.com/items?itemName=ms-python.python
+- In VSC go to extensions and download Jupyter https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter
+3. Install Homebrew in terminal https://brew.sh/
 - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 4. Install git-lfs using Homebrew in command line
 - brew install git-lfs
