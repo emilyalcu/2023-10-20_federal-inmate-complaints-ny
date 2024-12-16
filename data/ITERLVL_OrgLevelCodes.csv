@@ -1,3 +1,4 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:bf3f8c75c4d40c04024be330c73955edf108cd674f2793679728adcfeb5cb2b9
-size 41
+Code,Text
+F,Facility
+R,Region
+A,Agency

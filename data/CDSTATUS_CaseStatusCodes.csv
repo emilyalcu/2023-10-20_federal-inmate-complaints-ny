@@ -1,3 +1,6 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:cccd5d5d0986ec3c45e78e8eb8ab93f77f6bb544edc7ffbeed56faa34b45bf94
-size 94
+Code,Text
+ACC,Accepted
+CLD,Closed Denied
+CLG,Closed Granted
+CLO,Closed Other
+REJ,Rejected
