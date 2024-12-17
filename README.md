@@ -43,7 +43,7 @@ Be sure to read the wiki page to learn more about the project and the expected o
     - R https://marketplace.visualstudio.com/items?itemName=REditorSupport.r
 
 ## Step 8: Install pandas in Visual Studio Code
-- While in the Studio Code application open a new Jupyter Notebook with the 3.12.1 kernel
+- While in the Visual Studio Code application open a new Jupyter Notebook with the 3.12.1 kernel
 - Open the terminal within the application (terminal>new terminal)
 - Run "pip3 install pandas"
 
